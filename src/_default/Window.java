@@ -80,14 +80,13 @@ public class Window {
 			Graphics2D g2 = (Graphics2D) g;
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2.setPaint(Color.BLACK);
-			
 			g2.draw(ball.getEllipse());
 			g2.fill(ball.getEllipse());
-			g2.drawString("v:"+v, 100, (int)ball.getCenterY());
-			g2.drawString("v:"+v_xx, (int)ball.getCenterX(), 100);
-			g2.drawLine(0, (int)ball.getCenterY(), 1200, (int)ball.getCenterY());
-			g2.drawLine((int)ball.getCenterX(), 0, (int)ball.getCenterX(), 450);
-			g2.drawLine(0, 400, 1200, 400);
+//			g2.drawString("v:"+v+" y:"+ball.getCenterY(), 100, (int)ball.getCenterY());
+//			g2.drawString("v:"+v_xx, (int)ball.getCenterX(), 100);
+//			g2.drawLine(0, (int)ball.getCenterY(), 1200, (int)ball.getCenterY());
+//			g2.drawLine((int)ball.getCenterX(), 0, (int)ball.getCenterX(), 450);
+//			g2.drawLine(0, 400, 1200, 400);
 		}
 	}
 	class TimerListener implements ActionListener {
@@ -98,36 +97,33 @@ public class Window {
 			if(arg0.getSource() == t) {
 				double y_v = ball.getY_velocity();
 				double x_v = ball.getX_velocity();
-				ball.setCenter(ball.getCenterX()+x_v, ball.getCenterY()+y_v);
-				y_v += gravity;
-				double buttom_point = ball.getCenterY()+ball.getRaduis();
-				
-				if(buttom_point >= 399.7 && y_v > 0) {//临界检测
-					if(buttom_point >= 400) {
-						//落点越界的细微修正
-						double time = (buttom_point - 400)/y_v;
-						ball.setCenter(ball.getCenterX()- x_v * time, 385);
+				double x = ball.getCenterX();
+				double y = ball.getCenterY();
+				if(y + y_v >= 385) {
+					y = 385;
+					if(y_v!=0) x += (1 - ((y+y_v)-385)/y_v) * x_v;
+					else x += x_v;
+					if (y_v < 0.0065 && y == 385) y_v = 0;//y方向接近为0
+					if (x_v < 0.005) x_v = 0;//x方向接近为0
+					if(y_v!=0) {
 						y_v = -y_v;
-						y_v*=0.68;
-						x_v*=0.995;
+						y_v *= 0.85;
 					}
-					
-					//消去最后微弱的因为浮点数运算不准确导致的噪点跳动
-					if(Math.abs(y_v)>0.009) ;
-					else {
-						y_v = 0;
-						ball.setCenter(ball.getCenterX(), 385);
-					}
-					if(x_v<0.001) x_v = 0;
+					if(x_v!=0) x_v *= 0.998;
 				}
-				v = y_v;
-				v_xx = x_v;
+				else {
+					x += x_v;
+					y += y_v;
+				}
+				ball.setCenter(x, y);
+				if(y_v != 0) y_v += gravity;
 				ball.setY_velocity(y_v);
 				ball.setX_velocity(x_v);
-				
-				if(y_v == 0 && x_v == 0) {
-					t.stop();
+				v = y_v;
+				v_xx = x_v;
+				if(x_v ==0 && y_v == 0) {
 					System.out.println("Timer stop.");
+					t.stop();
 				}
 				panel.repaint();
 			}
@@ -143,7 +139,7 @@ public class Window {
 			if(keyCode == KeyEvent.VK_T) {
 				System.out.println("Timer start.");
 				ball.setCenter(Math.random()*50 + 20, Math.random()*50 + 20);
-				ball.setX_velocity(Math.random()*0.04 + 0.6);
+				ball.setX_velocity(Math.random()*0.04 + 0.28);
 				ball.setY_velocity(Math.random()*0.005 + 0.2);
 				t.start();
 			}
