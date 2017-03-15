@@ -8,6 +8,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Paths;
+import java.util.Scanner;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -56,12 +61,12 @@ public class Window {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 1200, 450);
+		frame.setBounds(100, 100, 1200, 500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setTitle(" T 键开始模拟");
+		frame.setTitle(" 空格键 开始模拟");
 		frame.addKeyListener(new MyKeyListener());
 		
-		gravity = 0.012;
+		gravity = 0.008;
 		v = 0;
 		ball = new Ball(-50, -50, 15, 
 				Math.random()*0.005 + 0.2, Math.random()*0.005 + 0.01);
@@ -87,7 +92,8 @@ public class Window {
 //			g2.drawLine(0, (int)ball.getCenterY(), 1200, (int)ball.getCenterY());
 //			g2.drawLine((int)ball.getCenterX(), 0, (int)ball.getCenterX(), 450);
 			g2.drawLine(0, 400, 1200, 400);//底边
-			g2.drawLine(1100, 0, 1100, 450);//右边
+			g2.drawLine(1100, 0, 1100, 480);//右边
+			g2.drawLine(100, 0, 100, 480);//左边
 		}
 	}
 	class TimerListener implements ActionListener {
@@ -101,7 +107,7 @@ public class Window {
 				double x = ball.getCenterX();
 				double y = ball.getCenterY();
 				
-				if(y + y_v >= 385 && x + x_v < 1085) {//y_max:400 x_max:1100
+				if(y + y_v >= 385 && x + x_v < 1085 && x + x_v > 115) {//底边 y_max:400 x_max:1100
 					y = 385;//触底修正
 					if(y_v!=0) x += (1 - ((y+y_v)-385)/y_v) * x_v;//触底修正
 					else x += x_v;//y向为0时平移
@@ -121,10 +127,89 @@ public class Window {
 						x_v = -x_v;
 						x_v *= 0.998;
 					}
-					if(y_v!=0) y_v *= 0.85;
+					if(y_v!=0) y_v *= 0.998;
 				}
-				else if(y + y_v >= 385 && x + x_v >= 1085) {
-					
+				else if(y + y_v >= 385 && x + x_v >= 1085) {//右下角
+					double _x = x+x_v-1085;//触边修正
+					double _y = y+y_v-385;
+					if(_x == _y) {
+						x = 1085;
+						y = 385;
+						if(x_v!=0) {
+							x_v = -x_v;
+							x_v *= 0.998;
+						}
+						if(y_v!=0) {
+							y_v = -y_v;
+							y_v *= 0.85;
+						}
+					}
+					else if (_x > _y) {
+						x = 1085;
+						if(x_v!=0) y += (1 - ((x+x_v)-1085)/x_v) * y_v;
+						else y += y_v;
+						if(x_v!=0) {
+							x_v = -x_v;
+							x_v *= 0.998;
+						}
+						if(y_v!=0) y_v *= 0.998;
+					}
+					else {
+						y = 385;
+						if(y_v!=0) x += (1 - ((y+y_v)-385)/y_v) * x_v;
+						else x += x_v;
+						if(y_v!=0) {//y向速度反转，衰减
+							y_v = -y_v;
+							y_v *= 0.85;
+						}
+						if(x_v!=0) x_v *= 0.998;//x向速度衰减
+					}
+				}
+				else if(y + y_v < 385 && x + x_v <= 115) {//左边
+					x = 115;//触边修正
+					if(x_v!=0) y += (1 - (115-(x+x_v))/(-x_v)) * y_v;//触边修正
+					else y += y_v;//x向为0时平移
+					if(x_v!=0) {
+						x_v = -x_v;
+						x_v *= 0.998;
+					}
+					if(y_v!=0) y_v *= 0.998;
+				}
+				else if(y + y_v >= 385 && x + x_v <= 115) {//左下角
+					double _x = 115-x+x_v;//触边修正
+					double _y = y+y_v-385;
+					if(_x == _y) {
+						x = 115;
+						y = 385;
+						if(x_v!=0) {
+							x_v = -x_v;
+							x_v *= 0.998;
+						}
+						if(y_v!=0) {
+							y_v = -y_v;
+							y_v *= 0.85;
+						}
+					}
+					else if (_x > _y) {
+						x = 115;
+						if(x_v!=0) y += (1 - (115-(x+x_v))/(-x_v)) * y_v;
+						else y += y_v;
+						if(x_v!=0) {
+							x_v = -x_v;
+							x_v *= 0.998;
+						}
+						if(y_v!=0) y_v *= 0.998;
+					}
+					else {
+						y = 385;
+						if(y_v!=0) x += (1 - ((y+y_v)-385)/y_v) * x_v;
+						else x += x_v;
+						if(y_v!=0) {//y向速度反转，衰减
+							y_v = -y_v;
+							y_v *= 0.85;
+						}
+						if(x_v!=0) x_v *= 0.998;//x向速度衰减
+					}
 				}
 				else {
 					x += x_v;
@@ -152,10 +237,10 @@ public class Window {
 		public void keyPressed(KeyEvent arg0) {
 			// TODO Auto-generated method stub
 			int keyCode = arg0.getKeyCode();
-			if(keyCode == KeyEvent.VK_T) {
+			if(keyCode == KeyEvent.VK_SPACE) {
 				System.out.println("Timer start.");
-				ball.setCenter(Math.random()*50 + 20, Math.random()*50 + 20);
-				ball.setX_velocity(Math.random()*0.04 + 0.628);
+				ball.setCenter(Math.random()*50 + 35, Math.random()*50 + 35);
+				ball.setX_velocity(Math.random()*0.04 + 1.228);
 				ball.setY_velocity(Math.random()*0.005 + 0.2);
 				t.start();
 			}
