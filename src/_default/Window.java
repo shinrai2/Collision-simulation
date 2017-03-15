@@ -86,7 +86,8 @@ public class Window {
 //			g2.drawString("v:"+v_xx, (int)ball.getCenterX(), 100);
 //			g2.drawLine(0, (int)ball.getCenterY(), 1200, (int)ball.getCenterY());
 //			g2.drawLine((int)ball.getCenterX(), 0, (int)ball.getCenterX(), 450);
-//			g2.drawLine(0, 400, 1200, 400);
+			g2.drawLine(0, 400, 1200, 400);//底边
+			g2.drawLine(1100, 0, 1100, 450);//右边
 		}
 	}
 	class TimerListener implements ActionListener {
@@ -99,22 +100,39 @@ public class Window {
 				double x_v = ball.getX_velocity();
 				double x = ball.getCenterX();
 				double y = ball.getCenterY();
-				if(y + y_v >= 385) {
-					y = 385;
-					if(y_v!=0) x += (1 - ((y+y_v)-385)/y_v) * x_v;
-					else x += x_v;
+				
+				if(y + y_v >= 385 && x + x_v < 1085) {//y_max:400 x_max:1100
+					y = 385;//触底修正
+					if(y_v!=0) x += (1 - ((y+y_v)-385)/y_v) * x_v;//触底修正
+					else x += x_v;//y向为0时平移
 					if (y_v < 0.0065 && y == 385) y_v = 0;//y方向接近为0
-					if (x_v < 0.005) x_v = 0;//x方向接近为0
-					if(y_v!=0) {
+					if (Math.abs(x_v) < 0.005) x_v = 0;//x方向接近为0
+					if(y_v!=0) {//y向速度反转，衰减
 						y_v = -y_v;
 						y_v *= 0.85;
 					}
-					if(x_v!=0) x_v *= 0.998;
+					if(x_v!=0) x_v *= 0.998;//x向速度衰减
+				}
+				else if(y + y_v < 385 && x + x_v >= 1085) {//右边
+					x = 1085;//触边修正
+					if(x_v!=0) y += (1 - ((x+x_v)-1085)/x_v) * y_v;//触边修正
+					else y += y_v;//x向为0时平移
+					if (y_v < 0.0065 && y == 385) y_v = 0;//y方向接近为0
+					if (Math.abs(x_v) < 0.005) x_v = 0;//x方向接近为0
+					if(x_v!=0) {
+						x_v = -x_v;
+						x_v *= 0.998;
+					}
+					if(y_v!=0) y_v *= 0.85;
+				}
+				else if(y + y_v >= 385 && x + x_v >= 1085) {
+					
 				}
 				else {
 					x += x_v;
 					y += y_v;
 				}
+				
 				ball.setCenter(x, y);
 				if(y_v != 0) y_v += gravity;
 				ball.setY_velocity(y_v);
@@ -139,7 +157,7 @@ public class Window {
 			if(keyCode == KeyEvent.VK_T) {
 				System.out.println("Timer start.");
 				ball.setCenter(Math.random()*50 + 20, Math.random()*50 + 20);
-				ball.setX_velocity(Math.random()*0.04 + 0.28);
+				ball.setX_velocity(Math.random()*0.04 + 0.628);
 				ball.setY_velocity(Math.random()*0.005 + 0.2);
 				t.start();
 			}
