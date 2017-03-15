@@ -117,8 +117,6 @@ public class Window {
 					x = 1085;//触边修正
 					if(x_v!=0) y += (1 - ((x+x_v)-1085)/x_v) * y_v;//触边修正
 					else y += y_v;//x向为0时平移
-					if (y_v < 0.0065 && y == 385) y_v = 0;//y方向接近为0
-					if (Math.abs(x_v) < 0.005) x_v = 0;//x方向接近为0
 					if(x_v!=0) {
 						x_v = -x_v;
 						x_v *= 0.998;
